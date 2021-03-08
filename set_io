@@ -1,0 +1,43 @@
+#!/bin/bash
+#
+# (c) Copyright 2010  Lieven De Samblanx <on7lds@amsat.org>
+#
+
+OP=$1
+if [ "$OP" != "output" -a "$OP" != "output0" -a "$OP" != "output1" -a "$OP" != "input" ]; then
+    echo "usage: gpio-dev output|output0|output1|input"
+    exit 1
+fi
+
+
+#Write values for /dev/gpio devices (needs the cs5535_gpio module and soekris_gpio script)
+#  O output
+#  o input
+#  T push-pull
+#  t open drain
+#  P pull-up enabled
+#  p pull-up disabled
+# with DEBUG compiled in (results go to syslog):
+#  v print settings
+#  c get driven and read value
+
+OUTPUT="OT"
+INPUT="op"
+BASE="/dev/gpio"
+
+
+NUM=0
+while [ $NUM -lt 12 ]; do
+    FILE=$BASE-$NUM
+    if [ -e $FILE ]; then
+        echo -n "$FILE set to "
+        if [ "$OP" = output ];  then echo $OUTPUT    > $FILE; echo "output"; fi
+        if [ "$OP" = output0 ]; then echo $OUTPUT"0" > $FILE; echo "output, switched OFF"; fi
+        if [ "$OP" = output1 ]; then echo $OUTPUT"1" > $FILE; echo "output, switched ON"; fi
+        if [ "$OP" = input ];   then echo $INPUT     > $FILE; echo "intput"; fi
+    else
+        echo  "$FILE does not exist"
+    fi
+    let NUM=NUM+1
+done
+

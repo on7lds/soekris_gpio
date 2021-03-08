@@ -1,0 +1,102 @@
+#!/bin/bash
+# Based on work from Arnau Sanchez
+#  (http://lists.soekris.com/pipermail/soekris-tech/2006-November/011203.html)
+#
+# (c) Copyright 2010  Lieven De Samblanx <on7lds@amsat.org>
+#
+
+OP=$1
+if [ "$OP" != "create" -a "$OP" != "remove"  -a "$OP" != "removeall" ]; then
+    echo "usage: soekris_gpio create|remove|removeall"
+    echo "       (removeall allso tries to remove the gpio modules from the kernel)"
+    echo ""
+    exit 1
+fi
+
+BASE="/dev/gpio"
+
+modprobe cs5535_gpio > /dev/null 2>&1
+modprobe pc8736x_gpio > /dev/null 2>&1
+modprobe gpio > /dev/null 2>&1
+
+# error LED
+MAJOR=$(cat /proc/devices | grep " cs5535_gpio$" | awk -F " " '{print $1}')
+MINOR=6
+
+if [ -z $MAJOR ]; then
+    echo "No cs5535_gpio module found, not able to $OP error_led device."
+    exit 1
+else
+    echo "cs5535_gpio module found with major $MAJOR"
+fi
+
+FILE="/dev/error_led"
+if [ -e $FILE ]; then rm -f $FILE; fi
+if [ "$OP" = create ]; then
+    mknod $FILE c $MAJOR $MINOR
+    echo "   $FILE created ($MAJOR,$MINOR)"
+else
+    if [ "$OP" = removeall ]; then
+	rmmod cs5535_gpio
+	echo "Module removed"
+    fi
+fi
+
+
+#GPIO pins JP5
+MAJOR=$(cat /proc/devices | grep " pc8736x_gpio$" | awk -F " " '{print $1}')
+
+# Minor values from GPIO0 to GPIO11 (tested on net5501)
+MINOR_LIST="16 17 18 19 20 21 22 23 4 5 11 10 254"
+
+if [ -z $MAJOR ]; then
+    echo "No pc8736x_gpio module found, not able to $OP gpio devices"
+    exit 1
+else
+    echo "pc8736x_gpio module found with major $MAJOR"
+fi
+
+NUM=0
+for MINOR in $MINOR_LIST; do
+    FILE=$BASE-$NUM
+    if [ -e $FILE ]; then rm -f $FILE; fi
+    if [ "$OP" = create ]; then
+        mknod $FILE c $MAJOR $MINOR
+        echo "   $FILE created ($MAJOR,$MINOR)"
+    fi
+    let NUM=NUM+1
+done
+
+if [ "$OP" = removeall ]; then
+    rmmod pc8736x_gpio
+    echo "Module removed"
+fi
+
+
+#GPIO devices via gpio kernel module
+MAJOR=$(cat /proc/devices | grep " gpio$" | awk -F " " '{print $1}')
+
+# Minor values from GPIO0 to GPIO11 (tested on net5501)
+MINOR_LIST="0 1 254"
+
+if [ -z $MAJOR ]; then
+    echo "No gpio module found, not able to $OP gpio devices"
+    exit 1
+else
+    echo "gpio module found with major $MAJOR"
+fi
+
+for MINOR in $MINOR_LIST; do
+    FILE=$BASE$MINOR
+    if [ -e $FILE ]; then rm -f $FILE; fi
+    if [ "$OP" = create ]; then
+       mknod $FILE c $MAJOR $MINOR
+       echo "   $FILE created ($MAJOR,$MINOR)"
+    fi
+done
+
+if [ "$OP" = removeall ]; then
+    rmmod gpio
+    echo "Module removed"
+fi
+

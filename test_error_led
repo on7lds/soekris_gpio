@@ -1,0 +1,42 @@
+#!/bin/bash
+
+#
+# (c) Copyright 2010  Lieven De Samblanx <on7lds@amsat.org>
+#
+
+echo "Trying to switch the error led ON and then OFF"
+echo "  Note:"
+echo "   - on my Net5501 I'm not able to read the error led status via /dev)"
+echo "   - No fault checking (loaded modules, ...)"
+echo ""
+if [ -e /dev/error_led ]; then
+if [ -e /proc/driver/soekris_error_led ]; then
+    echo "Set via /dev - Read via /proc"
+else
+    echo "Set via /dev - Read via /proc wil cause error (need cs5535_gpio module)"
+fi
+echo -n "On  : "
+echo 1 > /dev/error_led
+cat /proc/driver/soekris_error_led
+sleep 1
+echo -n "Off : "
+echo 0 > /dev/error_led
+cat /proc/driver/soekris_error_led
+sleep 1
+else
+    echo "no /dev/error_led (need cs5535_gpio module)"
+fi
+
+if [ -e /proc/driver/soekris_error_led ]; then
+echo "Set via /proc - Read via /proc"
+echo -n "On  : "
+echo 1 > /proc/driver/soekris_error_led
+cat /proc/driver/soekris_error_led
+sleep 1
+echo -n "Off : "
+echo 0 > /proc/driver/soekris_error_led
+cat /proc/driver/soekris_error_led
+else
+    echo "no /proc/driver/soekris_error_led (need gpio module)"
+fi
+echo ""

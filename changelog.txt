@@ -1,0 +1,54 @@
+Changelog
+1.0   2003-07-31   
+* Initial release
+
+1.1   2003-08-14   
+* Added IOCTL support, code-cleanup
+
+1.1.1 2003-08-15   
+* Fixed major problem (kernel oops) in the initialization of the module
+
+1.1.2 2003-08-15   
+* Minor cleanup regarding speed when writing to the GPIOs
+
+1.1.3 2003-08-18   
+* Fixed problem with setting the direction of the GPIOs 
+  (which was introduced with the previous speed improvement...)
+
+1.1.4 2003-10-07   
+* Fixed problem IOCTL calls causing segfault
+
+1.2.0 2003-11-09
+* Added support for net4801
+* Rewrite to implement 4501 and 4801 driver with a common interface
+
+1.2.1 2003-11-27   
+* Bugfixes to reading error_led and gpio ports, thanks to Dave Johnson
+
+1.3.0 2004-01-22
+* Added support for the voltage and temperature monitors on the 4801
+* Cleaned up proc handling
+* Added drivertest program, to make sure all functions still work after a 
+  code change
+* Reorganized the code so there's only one (somewhat bigger) module 
+  for 4801 and 45xx   
+  
+1.3.1 2004-01-26
+* Since the previous release was not quite finished (but released to respond 
+  to an inquiry on the soekris-tech list) this release takes care of all open 
+  issues (documentation, test-program)
+* Fixed bug with writing to /dev/gpio1 (4801 only)
+
+1.3.2 2004-02-24
+* fixed "unresolved symbol __number_of_pins", that occurred if the module was 
+  stripped with "--strip-unneeded"
+* fixed (?) problem with MODVERSIONS enabled in the kernel
+* corrected JP5 description in 4801gpio.h
+
+1.3.3 2010-11-20 by Lieven De Samblanx
+* Added 5501 driver
+* Removed __exit annotations to prevent section mismatch(es) errors
+    (thanks to Geert Uytterhoeven)
+* Terminated string after read from userspace. Unterminated string could
+  prevent setting the 12th GPIO pin via /proc/soekris_io_settings
+* Added helper and test scripts
